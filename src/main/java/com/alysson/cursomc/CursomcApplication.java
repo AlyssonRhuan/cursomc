@@ -13,6 +13,7 @@ import com.alysson.cursomc.domain.Cidade;
 import com.alysson.cursomc.domain.Cliente;
 import com.alysson.cursomc.domain.Endereco;
 import com.alysson.cursomc.domain.Estado;
+import com.alysson.cursomc.domain.ItemPedido;
 import com.alysson.cursomc.domain.Pagamento;
 import com.alysson.cursomc.domain.PagamentoComBoleto;
 import com.alysson.cursomc.domain.PagamentoComCartao;
@@ -25,6 +26,7 @@ import com.alysson.cursomc.repositories.CidadeRepository;
 import com.alysson.cursomc.repositories.ClienteRepository;
 import com.alysson.cursomc.repositories.EnderecoRepository;
 import com.alysson.cursomc.repositories.EstadoRepository;
+import com.alysson.cursomc.repositories.ItemPedidoRepository;
 import com.alysson.cursomc.repositories.PagamentoRepository;
 import com.alysson.cursomc.repositories.PedidoRepository;
 import com.alysson.cursomc.repositories.ProdutoRepository;
@@ -55,6 +57,9 @@ public class CursomcApplication implements CommandLineRunner{
 	
 	@Autowired
 	private PedidoRepository pedidoRepository;
+	
+	@Autowired
+	private ItemPedidoRepository itemPedidoRepository;
 
 	public static void main(String[] args) {
 		SpringApplication.run(CursomcApplication.class, args);
@@ -92,6 +97,17 @@ public class CursomcApplication implements CommandLineRunner{
 		Pagamento pagto2 = new PagamentoComBoleto(null, EstadoPagamento.PENDENTE, ped2, sdf.parse("20/10/2017 00:00"), null);
 		ped2.setPagamento(pagto2);
 		
+		ItemPedido ip1 = new ItemPedido(ped1, p1, 0.0, 2000.00, 1);
+		ItemPedido ip2 = new ItemPedido(ped1, p3, 0.0, 80.00, 2);
+		ItemPedido ip3 = new ItemPedido(ped2, p2, 100.0, 800.00, 1);
+		
+		ped1.getItens().addAll(Arrays.asList(ip1, ip2));		
+		ped2.getItens().addAll(Arrays.asList(ip3));
+		
+		p1.getItens().addAll(Arrays.asList(ip1));
+		p2.getItens().addAll(Arrays.asList(ip3));
+		p3.getItens().addAll(Arrays.asList(ip2));
+		
 		cli1.getPedidos().addAll(Arrays.asList(ped1, ped2));
 		
 		cli1.getTelefones().addAll(Arrays.asList("36231785", "99998888"));
@@ -116,5 +132,6 @@ public class CursomcApplication implements CommandLineRunner{
 		enderecoRepository.saveAll(Arrays.asList(e1, e2));
 		pedidoRepository.saveAll(Arrays.asList(ped1, ped2));
 		pagamentoRepository.saveAll(Arrays.asList(pagto1, pagto2));
+		itemPedidoRepository.saveAll(Arrays.asList(ip1, ip2, ip3));
 	}
 }
