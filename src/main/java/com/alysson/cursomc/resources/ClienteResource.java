@@ -1,5 +1,6 @@
 package com.alysson.cursomc.resources;
 
+import java.net.URI;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -14,9 +15,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.alysson.cursomc.domain.Cliente;
 import com.alysson.cursomc.dto.ClienteDTO;
+import com.alysson.cursomc.dto.ClienteNewDTO;
 import com.alysson.cursomc.services.ClienteService;
 
 @RestController
@@ -31,12 +34,24 @@ public class ClienteResource {
 		Cliente cliente = clienteService.findById(id);		
 		return ResponseEntity.ok().body(cliente);
 	}
+
+	@RequestMapping(method=RequestMethod.POST)	
+	public ResponseEntity<Void> insert(@Valid @RequestBody ClienteNewDTO cliDTO){
+		Cliente cli = clienteService.fromDTO(cliDTO);
+		cli = clienteService.insert(cli);
+		URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
+				.path("/{id}")
+				.buildAndExpand(cli.getId())
+				.toUri();
+		
+		return ResponseEntity.created(uri).build();
+	}
 	
 	@RequestMapping(value="/{id}", method=RequestMethod.PUT)
-	public ResponseEntity<Void> update(@PathVariable Integer id,@Valid @RequestBody ClienteDTO catDTO){
-		Cliente cat = clienteService.fromDTO(catDTO);
-		cat.setId(id);
-		cat = clienteService.update(cat);
+	public ResponseEntity<Void> update(@PathVariable Integer id,@Valid @RequestBody ClienteDTO cliDTO){
+		Cliente cli = clienteService.fromDTO(cliDTO);
+		cli.setId(id);
+		cli = clienteService.update(cli);
 		
 		return ResponseEntity.noContent().build();
 	}
