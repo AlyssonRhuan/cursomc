@@ -118,11 +118,11 @@ public class ItemPedido  implements Serializable{
 		
 		StringBuilder builder = new StringBuilder();
 		builder.append(getProduto().getNome());
-		builder.append(" , Qtd: ");
+		builder.append("\n");
 		builder.append(getQuantidade());
-		builder.append(", Preço unitátrio: ");
+		builder.append(" x ");
 		builder.append(nf.format(getPreco()));
-		builder.append(", Subtotal: ");
+		builder.append(" = ");
 		builder.append(nf.format(getSubTotal()));
 		builder.append("\n");
 		return builder.toString();

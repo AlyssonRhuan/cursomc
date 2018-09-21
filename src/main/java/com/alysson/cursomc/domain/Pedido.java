@@ -145,26 +145,26 @@ public class Pedido implements Serializable{
 	@Override
 	public String toString() {
 		NumberFormat nf = NumberFormat.getCurrencyInstance(new Locale("pt", "BR"));
-		SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+		SimpleDateFormat sdfDay = new SimpleDateFormat("dd/MM/yyyy");
+		SimpleDateFormat sdfHour = new SimpleDateFormat("HH:mm");
 		
 		StringBuilder builder = new StringBuilder();
-		builder.append("Pedido número: ");
+		builder.append("Olá " + getCliente().getNome());		
+		builder.append(", o seu pedido de número ");
 		builder.append(getId());
-		builder.append(", Instante: ");
-		builder.append(sdf.format(getInstante()));
-		builder.append(", Cliente: ");
-		builder.append(getCliente().getNome());
-		builder.append(", Situação do pagamento: ");
-		builder.append(getPagamento().getEstado().getDescricao());
-		builder.append("\n");
-		builder.append("Detalhes: ");
+		builder.append(" que foi realizado às ");
+		builder.append(sdfHour.format(getInstante()) + ", do dia " + sdfDay.format(getInstante()));
+		builder.append(", já foi computado e a situação do pagamento é ");
+		builder.append(getPagamento().getEstado().getDescricao().toLowerCase());
+		builder.append(".\n");
+		builder.append("Alguns detalhes do seu pedido: ");
 		builder.append("\n");
 		
 		for(ItemPedido ip : itens) {
-			builder.append(ip.toString());
+			builder.append("> " + ip.toString());
 		}
 		
-		builder.append("Valor Total: ");
+		builder.append("O Seu valor Total é ");
 		builder.append(nf.format(getValorTotal()));
 		
 		return builder.toString();
