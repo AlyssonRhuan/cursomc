@@ -3,9 +3,7 @@ package com.alysson.cursomc.dto;
 import java.io.Serializable;
 
 import com.alysson.cursomc.domain.Produto;
-import com.alysson.cursomc.services.validation.ClienteUpdate;
 
-@ClienteUpdate
 public class ProdutoDTO  implements Serializable{
 	private static final long serialVersionUID = 1L;
 
