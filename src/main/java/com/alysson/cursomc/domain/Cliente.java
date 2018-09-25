@@ -53,8 +53,6 @@ public class Cliente implements Serializable{
 	@OneToMany(mappedBy="cliente")	
 	private List<Pedido> pedidos = new ArrayList<>();
 	
-	private String imageUrl;
-	
 	public Cliente() {
 		setPerfil(Perfil.CLIENTE);
 	}
@@ -156,14 +154,6 @@ public class Cliente implements Serializable{
 
 	public void setTipo(Integer tipo) {
 		this.tipo = tipo;
-	}
-
-	public String getImageUrl() {
-		return imageUrl;
-	}
-
-	public void setImageUrl(String imageUrl) {
-		this.imageUrl = imageUrl;
 	}
 
 	@Override
