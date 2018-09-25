@@ -30,31 +30,31 @@ import com.alysson.cursomc.services.exceptions.ObjectNotFoundException;
 
 @Service
 public class ClienteService {
-	
+
 	@Autowired
-	private ClienteRepository clienteRepository;	
-	
+	private ClienteRepository clienteRepository;
+
 	@Autowired
-	private EnderecoRepository enderecoRepository;	
-	
+	private EnderecoRepository enderecoRepository;
+
 	@Autowired
 	private BCryptPasswordEncoder bCryptPasswordEncoder;
-	
+
 	@Autowired
 	private S3Service s3Service;
-	
-	public Cliente findById(Integer id){
-		
+
+	public Cliente findById(Integer id) {
+
 		UserSS user = UserService.authenticated();
-		
-		if(user == null || !user.hasRole(Perfil.ADMIN) && !id.equals(user.getId()))
+
+		if (user == null || !user.hasRole(Perfil.ADMIN) && !id.equals(user.getId()))
 			throw new AuthorizationException("Acesso negado!");
-		
-		Optional<Cliente> cliente = clienteRepository.findById(id);		
+
+		Optional<Cliente> cliente = clienteRepository.findById(id);
 		return cliente.orElseThrow(() -> new ObjectNotFoundException(
 				"Objeto não encontrado! Id: " + id + ", Tipo: " + Cliente.class.getName()));
 	}
-	
+
 	@Transactional
 	public Cliente insert(Cliente cli) {
 		cli.setId(null);
@@ -62,76 +62,75 @@ public class ClienteService {
 		enderecoRepository.saveAll(cli.getEnderecos());
 		return cli;
 	}
-	
+
 	public Cliente update(Cliente cli) {
 		Cliente newClient = findById(cli.getId());
 		updateData(newClient, cli);
 		return clienteRepository.save(newClient);
 	}
-	
+
 	public void delete(Integer id) {
 		findById(id);
-		
+
 		try {
-			clienteRepository.deleteById(id);	
-		} 
-		catch (DataIntegrityViolationException e) {
+			clienteRepository.deleteById(id);
+		} catch (DataIntegrityViolationException e) {
 			throw new DataIntegrityException("Não é possivel excluir um cliente, pois há pedidos relacionados.");
-		}			
+		}
 	}
-	
-	public List<Cliente> findAll(){
+
+	public List<Cliente> findAll() {
 		return clienteRepository.findAll();
 	}
-	
-	public Page<Cliente> findPage(Integer page, Integer linesPerPage, String orderBy, String direction){
+
+	public Page<Cliente> findPage(Integer page, Integer linesPerPage, String orderBy, String direction) {
 		PageRequest pageResquest = PageRequest.of(page, linesPerPage, Direction.valueOf(direction), orderBy);
 		return clienteRepository.findAll(pageResquest);
 	}
-	
+
 	public Cliente fromDTO(ClienteDTO clienteDTO) {
 		return new Cliente(clienteDTO.getId(), clienteDTO.getNome(), clienteDTO.getEmail(), null, null, null);
 	}
-	
+
 	public Cliente fromDTO(ClienteNewDTO clienteNewDTO) {
-		Cliente cliente = new Cliente(
-				null, 
-				clienteNewDTO.getNome(), 
-				clienteNewDTO.getEmail(), 
-				clienteNewDTO.getCpfOuCnpj(), 
-				TipoCliente.toEnum(clienteNewDTO.getTipo()),
+		Cliente cliente = new Cliente(null, clienteNewDTO.getNome(), clienteNewDTO.getEmail(),
+				clienteNewDTO.getCpfOuCnpj(), TipoCliente.toEnum(clienteNewDTO.getTipo()),
 				bCryptPasswordEncoder.encode(clienteNewDTO.getSenha()));
-		
+
 		Cidade cidade = new Cidade(clienteNewDTO.getCidadeId(), null, null);
-		
-		Endereco endereco = new Endereco(
-				null, 
-				clienteNewDTO.getLogradouro(), 
-				clienteNewDTO.getNumero(), 
-				clienteNewDTO.getComplemento(), 
-				clienteNewDTO.getBairro(), 
-				clienteNewDTO.getCep(), 
-				cliente, 
-				cidade);
-		
-		cliente.getEnderecos().add(endereco);		
+
+		Endereco endereco = new Endereco(null, clienteNewDTO.getLogradouro(), clienteNewDTO.getNumero(),
+				clienteNewDTO.getComplemento(), clienteNewDTO.getBairro(), clienteNewDTO.getCep(), cliente, cidade);
+
+		cliente.getEnderecos().add(endereco);
 		cliente.getTelefones().add(clienteNewDTO.getTelefone1());
-		
-		if(clienteNewDTO.getTelefone2() != null)
+
+		if (clienteNewDTO.getTelefone2() != null)
 			cliente.getTelefones().add(clienteNewDTO.getTelefone2());
-		
-		if(clienteNewDTO.getTelefone3() != null)
+
+		if (clienteNewDTO.getTelefone3() != null)
 			cliente.getTelefones().add(clienteNewDTO.getTelefone3());
-		
+
 		return cliente;
 	}
-	
+
 	private void updateData(Cliente newClient, Cliente cli) {
 		newClient.setNome(cli.getNome());
 		newClient.setEmail(cli.getEmail());
 	}
-	
+
 	public URI uploadProfilePicture(MultipartFile multiPartFile) {
-		return s3Service.uploadFile(multiPartFile);
+		UserSS user = UserService.authenticated();
+
+		if (user == null)
+			throw new AuthorizationException("Acesso negado!");
+
+		URI uri = s3Service.uploadFile(multiPartFile);
+		Cliente cliente = findById(user.getId());
+		System.out.println("Cliente: " + cliente.toString());
+		cliente.setImageUrl(uri.toString());
+		this.update(cliente);
+		
+		return uri;
 	}
 }
