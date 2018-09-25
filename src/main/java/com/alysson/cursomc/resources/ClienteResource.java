@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.alysson.cursomc.domain.Cliente;
@@ -83,5 +84,11 @@ public class ClienteResource {
 		Page<Cliente> pageCliente = clienteService.findPage(page, linesPerPage, orderBy, direction);
 		Page<ClienteDTO> listaPageClienteDTO = pageCliente.map(obj -> new ClienteDTO(obj));
 		return ResponseEntity.ok().body(listaPageClienteDTO);
+	}
+
+	@RequestMapping(value="/picture", method=RequestMethod.POST)	
+	public ResponseEntity<Void> uploadProfilePicture(@RequestParam(name="file") MultipartFile multiPartFile){
+		URI uri = clienteService.uploadProfilePicture(multiPartFile);
+		return ResponseEntity.created(uri).build();
 	}
 }
